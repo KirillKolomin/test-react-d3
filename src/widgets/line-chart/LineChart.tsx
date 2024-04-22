@@ -2,6 +2,7 @@ import {Value} from "../../entities/line-chart/interfaces/value";
 import {extent, scaleUtc, scaleLinear, line} from "d3";
 import {FC, memo, useCallback, useEffect, useRef, useState} from "react";
 import styles from './LineChart.module.scss';
+import { throttle } from 'lodash';
 
 interface LineChartProps {
     values: Value[] | null;
@@ -53,10 +54,11 @@ const LineChart: FC<LineChartProps> = ({values}) => {
     }, [values]);
 
     useEffect(function connectWithResizeObserver() {
-        const observer = new ResizeObserver(([entry]: ResizeObserverEntry[]) => {
+        const onResizeObserved = throttle(([entry]: ResizeObserverEntry[]) => {
             calculateViewBox(entry.contentRect);
             calculateChart(entry.contentRect);
-        });
+        }, MILLISECONDS_PER_FRAME)
+        const observer = new ResizeObserver(onResizeObserved);
         const svgElement = svgRef.current;
 
         if (!svgElement) {
@@ -65,7 +67,10 @@ const LineChart: FC<LineChartProps> = ({values}) => {
 
         observer.observe(svgElement);
 
-        return () => observer.unobserve(svgElement);
+        return () => {
+            onResizeObserved.cancel();
+            observer.unobserve(svgElement)
+        };
     }, [calculateChart]);
 
     const labelElements = labels ? labels.map(label =>
