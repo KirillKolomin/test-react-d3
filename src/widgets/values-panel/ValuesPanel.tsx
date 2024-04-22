@@ -30,7 +30,7 @@ const ValuesPanel: FC<ValuesPanelProps> = ({values, onValueRemove, onNewValueAdd
         <li className={styles['value-item']} key={value.date.toISOString()}>
             <span>{adaptTimeToView(value.date)}</span>
             <span className={styles['value-item__value']}><b>{value.value}</b></span>
-            <button className={styles['value-item__button']} onClick={() => onValueRemove(index)}>Remove</button>
+            <button className={`${styles['value-item__button']} ${styles['remove-button']}`} onClick={() => onValueRemove(index)}>Remove</button>
         </li>
     ))
 
