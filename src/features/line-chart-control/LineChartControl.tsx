@@ -9,6 +9,7 @@ const LOCAL_STORAGE_VALUE_KEY = 'values';
 
 export const LineChartControl: FC = () => {
     const [values, setValues] = useState<Value[]>([]);
+    const [isLogarithmicChecked, setIsLogarithmicChecked] = useState(false);
 
     const setValuesToLocalStorage = (values: Value[]) => {
         localStorage.setItem(LOCAL_STORAGE_VALUE_KEY, JSON.stringify(values));
@@ -46,9 +47,16 @@ export const LineChartControl: FC = () => {
         <ShiftingPanel direction="left"></ShiftingPanel>
         <div className={styles['content']}>
             <div className={`b01sb ${styles['content__chart']}`}>
-                <LineChart values={values}></LineChart>
+                <LineChart values={values} isLogAxisOn={isLogarithmicChecked}></LineChart>
             </div>
             <div className={`b01sb  ${styles['content__values-panel']}`}>
+                <label>
+                    <input type="checkbox"
+                           onChange={(event) => setIsLogarithmicChecked(event.target.checked)}
+                           checked={isLogarithmicChecked}/>
+                    log axis
+                </label>
+
                 <ValuesPanel values={values} onNewValueAdd={addNewValue} onValueRemove={removeValue}></ValuesPanel>
             </div>
         </div>

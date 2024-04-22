@@ -1,11 +1,12 @@
 import {Value} from "../../entities/line-chart/interfaces/value";
-import {extent, scaleUtc, scaleLinear, line} from "d3";
+import {extent, scaleUtc, scaleLinear, line, scaleLog} from "d3";
 import {FC, memo, useCallback, useEffect, useRef, useState} from "react";
 import styles from './LineChart.module.scss';
 import {throttle} from 'lodash';
 
 interface LineChartProps {
     values: Value[];
+    isLogAxisOn: boolean;
 }
 
 interface YAxisTick {
@@ -40,7 +41,7 @@ const MILLISECONDS_END_IN_ISO = 23;
 const ADDITIONAL_X_AXIS_LABEL_HORIZONTAL_TRANSLATE = -20;
 const ADDITIONAL_X_AXIS_LABEL_VERTICAL_TRANSLATE = -20;
 
-const LineChart: FC<LineChartProps> = ({values}) => {
+const LineChart: FC<LineChartProps> = ({values, isLogAxisOn}) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [size, setSize] = useState<DOMRect | null>(null)
     const [yAxisTicks, setYAxisTicks] = useState<YAxisTick[] | null>(null);
@@ -61,14 +62,20 @@ const LineChart: FC<LineChartProps> = ({values}) => {
             return;
         }
 
-        const dateExtent = extent(values, ({date}) => date) as [Date, Date];
-        const valueExtent = extent(values, ({value}) => value) as [number, number];
+        const domain = isLogAxisOn ? values.map((value) => value.value <= 0 ? {
+            value: 0.01,
+            date: value.date
+        } : value) : values;
 
+        const dateExtent = extent(domain, ({date}) => date) as [Date, Date];
+        const valueExtent = extent(domain, ({value}) => value) as [number, number];
+
+        const scaleBuilderForValueScaleY = isLogAxisOn ? scaleLog : scaleLinear;
         const timeScaleX = scaleUtc(dateExtent, [MARGIN_LEFT + Y_AXIS_WIDTH, size.width - MARGIN_RIGHT]);
-        const valueScaleY = scaleLinear(valueExtent, [size.height - MARGIN_BOTTOM - X_AXIS_HEIGHT, MARGIN_TOP]);
+        const valueScaleY = scaleBuilderForValueScaleY(valueExtent, [size.height - MARGIN_BOTTOM - X_AXIS_HEIGHT, MARGIN_TOP]);
 
-        const curve = line<Value>((data) => timeScaleX(data.date), (data) => valueScaleY(data.value))(values);
-        const labels = values.map(({date, value}) => ({
+        const curve = line<Value>((data) => timeScaleX(data.date), (data) => valueScaleY(data.value))(domain);
+        const labels = domain.map(({date, value}) => ({
             date,
             value,
             x: timeScaleX(date),
@@ -92,7 +99,7 @@ const LineChart: FC<LineChartProps> = ({values}) => {
         setXAxisTicks(xAxisTicks);
         setCurve(curve);
         setLabels(labels);
-    }, [values]);
+    }, [values, isLogAxisOn]);
 
     useEffect(function connectWithResizeObserver() {
         const onResizeObserved = throttle(([entry]: ResizeObserverEntry[]) => {
@@ -126,8 +133,11 @@ const LineChart: FC<LineChartProps> = ({values}) => {
     )) : null;
     const xAxisTickElements = xAxisTicks && size ? xAxisTicks.map(tick => (
         <g key={tick.translate} transform={`translate(${tick.translate}, 0)`}>
-            <line opacity="0.5" stroke="currentColor" y1={-X_AXIS_HEIGHT} y2={-(size.height - MARGIN_TOP - X_AXIS_HEIGHT)}></line>
-            <text transform={`rotate(${X_AXIS_LABELS_ROTATE}) translate(${ADDITIONAL_X_AXIS_LABEL_HORIZONTAL_TRANSLATE}, ${ADDITIONAL_X_AXIS_LABEL_VERTICAL_TRANSLATE})`} fill="currentColor" x="0" dy="0.4rem">{tick.value}</text>
+            <line opacity="0.5" stroke="currentColor" y1={-X_AXIS_HEIGHT}
+                  y2={-(size.height - MARGIN_TOP - X_AXIS_HEIGHT)}></line>
+            <text
+                transform={`rotate(${X_AXIS_LABELS_ROTATE}) translate(${ADDITIONAL_X_AXIS_LABEL_HORIZONTAL_TRANSLATE}, ${ADDITIONAL_X_AXIS_LABEL_VERTICAL_TRANSLATE})`}
+                fill="currentColor" x="0" dy="0.4rem">{tick.value}</text>
         </g>
     )) : null;
 
