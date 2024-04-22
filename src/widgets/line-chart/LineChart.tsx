@@ -37,7 +37,8 @@ const X_AXIS_HEIGHT = 50;
 const X_AXIS_LABELS_ROTATE = -30;
 const MINUTES_START_IN_ISO = 14;
 const MILLISECONDS_END_IN_ISO = 23;
-const ADDITIONAL_X_AXIS_HORIZONTAL_TRANSLATE = -20;
+const ADDITIONAL_X_AXIS_LABEL_HORIZONTAL_TRANSLATE = -20;
+const ADDITIONAL_X_AXIS_LABEL_VERTICAL_TRANSLATE = -20;
 
 const LineChart: FC<LineChartProps> = ({values}) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
@@ -126,7 +127,7 @@ const LineChart: FC<LineChartProps> = ({values}) => {
     const xAxisTickElements = xAxisTicks && size ? xAxisTicks.map(tick => (
         <g key={tick.translate} transform={`translate(${tick.translate}, 0)`}>
             <line opacity="0.5" stroke="currentColor" y1={-X_AXIS_HEIGHT} y2={-(size.height - MARGIN_TOP - X_AXIS_HEIGHT)}></line>
-            <text transform={`rotate(${X_AXIS_LABELS_ROTATE}) translate(${ADDITIONAL_X_AXIS_HORIZONTAL_TRANSLATE})`} fill="currentColor" x="0" dy="0.4rem">{tick.value}</text>
+            <text transform={`rotate(${X_AXIS_LABELS_ROTATE}) translate(${ADDITIONAL_X_AXIS_LABEL_HORIZONTAL_TRANSLATE}, ${ADDITIONAL_X_AXIS_LABEL_VERTICAL_TRANSLATE})`} fill="currentColor" x="0" dy="0.4rem">{tick.value}</text>
         </g>
     )) : null;
 
