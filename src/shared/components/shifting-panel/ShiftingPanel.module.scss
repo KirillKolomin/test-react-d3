@@ -1,0 +1,56 @@
+.shifting-panel {
+  display: block;
+  position: relative;
+  width: 0;
+  height: 100%;
+  background-color: #dfdbd4;
+  transition: width 0.3s ease;
+}
+
+.left.shifting-panel::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 50%;
+  left: 100%;
+  border: 2rem solid transparent;
+  border-left-color: #5050EADF;
+  border-right: none;
+  transform: translate(0%, -50%);
+  transition: transform 0.3s ease;
+}
+
+.right.shifting-panel::before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 50%;
+  right: 100%;
+  border: 2rem solid transparent;
+  border-right-color: #5050EADF;
+  border-left: none;
+  transform: translate(0%, -50%);
+  transition: transform 0.3s ease;
+}
+
+.checked.shifting-panel {
+  width: 20rem;
+}
+
+.checked.left.shifting-panel::after {
+  left: unset;
+  right: 0;
+  border: 2rem solid transparent;
+  border-right-color: #5050EADF;
+  border-left: none;
+}
+
+.checked.right.shifting-panel::before {
+  right: unset;
+  left: 0;
+  border: 2rem solid transparent;
+  border-left-color: #5050EADF;
+  border-right: none;
+}
